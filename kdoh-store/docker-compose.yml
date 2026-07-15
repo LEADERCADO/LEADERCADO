@@ -1,0 +1,45 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: kdoh-postgres
+    environment:
+      POSTGRES_USER: kdoh
+      POSTGRES_PASSWORD: kdoh123
+      POSTGRES_DB: kdoh_db
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: kdoh-redis
+    ports:
+      - "6379:6379"
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    container_name: kdoh-backend
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DATABASE_URL=postgresql://kdoh:kdoh123@postgres:5432/kdoh_db?schema=public
+      - REDIS_URL=redis://redis:6379
+      - JWT_SECRET=change_this_in_production
+      - ADMIN_EMAIL=admin@kdoh.store
+      - ADMIN_PASSWORD=Admin123!
+    ports:
+      - "3000:3000"
+    restart: unless-stopped
+    volumes:
+      - ./backend/uploads:/app/uploads
+
+volumes:
+  pgdata:
