@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin KDOH - Gestion des Produits</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f6fa;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar h1 {
+            font-size: 1.5em;
+        }
+
+        .navbar-links a {
+            color: white;
+            text-decoration: none;
+            margin-left: 20px;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: background 0.3s ease;
+        }
+
+        .navbar-links a:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            padding: 0 20px;
+        }
+
+        .login-section {
+            background: white;
+            border-radius: 10px;
+            padding: 40px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            max-width: 400px;
+            margin: 50px auto;
+        }
+
+        .login-section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            color: #555;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group textarea,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group textarea:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 5px;
+            font-size: 1em;
+            cursor: pointer;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .dashboard {
+            display: none;
+        }
+
+        .dashboard.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .stat-card h3 {
+            color: #999;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+        }
+
+        .stat-card .value {
+            color: #333;
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+
+        .panel {
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .panel h2 {
+            color: #333;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f0f0f0;
+        }
+
+        .product-list {
+            list-style: none;
+        }
+
+        .product-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            border: 1px solid #eee;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            transition: background 0.3s ease;
+        }
+
+        .product-item:hover {
+            background: #f9f9f9;
+        }
+
+        .product-info h4 {
+            color: #333;
+            margin-bottom: 5px;
+        }
+
+        .product-info p {
+            color: #999;
+            font-size: 0.9em;
+        }
+
+        .product-actions button {
+            padding: 8px 15px;
+            margin-left: 5px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.9em;
+        }
+
+        .btn-edit {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-delete {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .file-upload {
+            border: 2px dashed #ddd;
+            padding: 20px;
+            text-align: center;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        .file-upload:hover {
+            border-color: #667eea;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <div class="navbar">
+        <h1>🛍️ Admin KDOH</h1>
+        <div class="navbar-links">
+            <a href="/">Accueil</a>
+            <a href="#" id="logoutBtn" class="hidden">Déconnexion</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Section Login -->
+        <div id="loginSection" class="login-section">
+            <h2>Connexion Administrateur</h2>
+            <div id="loginAlert" class="alert"></div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" name="email" required placeholder="admin@kdoh.store">
+                </div>
+                <div class="form-group">
+                    <label for="password">Mot de passe</label>
+                    <input type="password" id="password" name="password" required placeholder="Votre mot de passe">
+                </div>
+                <button type="submit" class="btn">Se connecter</button>
+            </form>
+        </div>
+
+        <!-- Dashboard -->
+        <div id="dashboard" class="dashboard">
+            <!-- Stats -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3>Produits Totaux</h3>
+                    <div class="value" id="totalProducts">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Ventes du Jour</h3>
+                    <div class="value" id="todaySales">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Revenu Mensuel</h3>
+                    <div class="value" id="monthlyRevenue">$0</div>
+                </div>
+            </div>
+
+            <div class="content-grid">
+                <!-- Formulaire d'ajout -->
+                <div class="panel">
+                    <h2>➕ Ajouter un Produit</h2>
+                    <div id="productAlert" class="alert"></div>
+                    <form id="productForm" enctype="multipart/form-data">
+                        <div class="form-group">
+                            <label for="title">Titre du produit</label>
+                            <input type="text" id="title" name="title" required placeholder="Ex: Smartphone XYZ">
+                        </div>
+                        <div class="form-group">
+                            <label for="description">Description</label>
+                            <textarea id="description" name="description" required placeholder="Décrivez le produit..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="price">Prix ($)</label>
+                            <input type="number" id="price" name="price" step="0.01" required placeholder="29.99">
+                        </div>
+                        <div class="form-group">
+                            <label for="stock">Stock</label>
+                            <input type="number" id="stock" name="stock" required placeholder="100">
+                        </div>
+                        <div class="form-group">
+                            <label for="category">Catégorie</label>
+                            <select id="category" name="category">
+                                <option value="electronics">Électronique</option>
+                                <option value="clothing">Vêtements</option>
+                                <option value="home">Maison</option>
+                                <option value="sports">Sports</option>
+                                <option value="other">Autre</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="model3dUrl">URL Modèle 3D (Optionnel)</label>
+                            <input type="url" id="model3dUrl" name="model3dUrl" placeholder="https://example.com/model.glb">
+                        </div>
+                        <div class="form-group">
+                            <label for="images">Images</label>
+                            <div class="file-upload" onclick="document.getElementById('images').click()">
+                                📁 Cliquez pour uploader des images
+                                <input type="file" id="images" name="images" multiple accept="image/*" class="hidden">
+                            </div>
+                            <p id="fileCount" style="margin-top: 10px; color: #999; font-size: 0.9em;"></p>
+                        </div>
+                        <button type="submit" class="btn">Créer le produit</button>
+                    </form>
+                </div>
+
+                <!-- Liste des produits -->
+                <div class="panel">
+                    <h2>📦 Produits</h2>
+                    <ul class="product-list" id="productList">
+                        <li style="text-align: center; color: #999; padding: 20px;">Chargement...</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = null;
+
+        // Éléments DOM
+        const loginSection = document.getElementById('loginSection');
+        const dashboard = document.getElementById('dashboard');
+        const loginForm = document.getElementById('loginForm');
+        const productForm = document.getElementById('productForm');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const loginAlert = document.getElementById('loginAlert');
+        const productAlert = document.getElementById('productAlert');
+        const imagesInput = document.getElementById('images');
+        const fileCount = document.getElementById('fileCount');
+
+        // Vérifier si déjà connecté
+        window.addEventListener('load', () => {
+            const savedToken = localStorage.getItem('kdoh_admin_token');
+            if (savedToken) {
+                authToken = savedToken;
+                showDashboard();
+                loadProducts();
+            }
+        });
+
+        // Gestion du login
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+
+            try {
+                const response = await fetch('/auth/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ email, password }),
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.access_token) {
+                    authToken = data.access_token;
+                    localStorage.setItem('kdoh_admin_token', authToken);
+                    showDashboard();
+                    loadProducts();
+                    showAlert(loginAlert, 'Connexion réussie!', 'success');
+                } else {
+                    showAlert(loginAlert, data.message || 'Échec de la connexion', 'error');
+                }
+            } catch (error) {
+                showAlert(loginAlert, 'Erreur de connexion au serveur', 'error');
+            }
+        });
+
+        // Déconnexion
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('kdoh_admin_token');
+            authToken = null;
+            loginSection.style.display = 'block';
+            dashboard.classList.remove('active');
+            logoutBtn.classList.add('hidden');
+        });
+
+        // Gestion du formulaire produit
+        productForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(productForm);
+            
+            try {
+                const response = await fetch('/products/admin/create', {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                    },
+                    body: formData,
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showAlert(productAlert, 'Produit créé avec succès!', 'success');
+                    productForm.reset();
+                    fileCount.textContent = '';
+                    loadProducts();
+                } else {
+                    showAlert(productAlert, data.message || 'Erreur lors de la création', 'error');
+                }
+            } catch (error) {
+                showAlert(productAlert, 'Erreur de connexion au serveur', 'error');
+            }
+        });
+
+        // Compteur de fichiers
+        imagesInput.addEventListener('change', () => {
+            const count = imagesInput.files.length;
+            fileCount.textContent = count > 0 ? `${count} fichier(s) sélectionné(s)` : '';
+        });
+
+        // Charger les produits
+        async function loadProducts() {
+            try {
+                const response = await fetch('/products');
+                const products = await response.json();
+
+                const productList = document.getElementById('productList');
+                document.getElementById('totalProducts').textContent = products.length;
+
+                if (products.length === 0) {
+                    productList.innerHTML = '<li style="text-align: center; color: #999; padding: 20px;">Aucun produit</li>';
+                    return;
+                }
+
+                productList.innerHTML = products.map(product => `
+                    <li class="product-item">
+                        <div class="product-info">
+                            <h4>${product.title}</h4>
+                            <p>$${product.price} - Stock: ${product.stock}</p>
+                            <p style="font-size: 0.8em; color: #ccc;">${product.category || 'Non catégorisé'}</p>
+                        </div>
+                        <div class="product-actions">
+                            <button class="btn-edit" onclick="editProduct('${product.id}')">Modifier</button>
+                            <button class="btn-delete" onclick="deleteProduct('${product.id}')">Supprimer</button>
+                        </div>
+                    </li>
+                `).join('');
+            } catch (error) {
+                console.error('Erreur chargement produits:', error);
+            }
+        }
+
+        // Modifier un produit
+        async function editProduct(id) {
+            alert(`Fonctionnalité de modification pour le produit ${id} - À implémenter`);
+        }
+
+        // Supprimer un produit
+        async function deleteProduct(id) {
+            if (!confirm('Êtes-vous sûr de vouloir supprimer ce produit ?')) return;
+
+            try {
+                const response = await fetch(`/products/admin/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                    },
+                });
+
+                if (response.ok) {
+                    loadProducts();
+                    showAlert(productAlert, 'Produit supprimé avec succès!', 'success');
+                } else {
+                    showAlert(productAlert, 'Erreur lors de la suppression', 'error');
+                }
+            } catch (error) {
+                showAlert(productAlert, 'Erreur de connexion au serveur', 'error');
+            }
+        }
+
+        // Afficher le dashboard
+        function showDashboard() {
+            loginSection.style.display = 'none';
+            dashboard.classList.add('active');
+            logoutBtn.classList.remove('hidden');
+        }
+
+        // Afficher une alerte
+        function showAlert(element, message, type) {
+            element.textContent = message;
+            element.className = `alert ${type}`;
+            element.style.display = 'block';
+            setTimeout(() => {
+                element.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
